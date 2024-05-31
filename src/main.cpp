@@ -97,13 +97,13 @@ MyFrame::MyFrame(const wxString& title) : wxFrame(NULL, wxID_ANY, title, wxDefau
     SetSizer(sizer);
 
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, "&Openen...\tCtrl-O", "Open een Markdown-bestand");
-    menuFile->Append(ID_Save, "&Opslaan...\tCtrl-S", "Sla het Markdown-bestand op");
+    menuFile->Append(ID_Open, "&Openen...  \tCtrl-O", "Open een Markdown-bestand");
+    menuFile->Append(ID_Save, "&Opslaan... \tCtrl-S", "Sla het Markdown-bestand op");
     menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT, "Afsluiten\tAlt-X", "Sluit dit programma af");
+    menuFile->Append(wxID_EXIT, "Afsluiten \tAlt-X", "Sluit MakeMe.md af");
 
     wxMenu* menuHelp = new wxMenu;
-    menuHelp->Append(ID_About, "&Over deze app", "Toon informatie over deze app");
+    menuHelp->Append(ID_About, "&Over deze app", "Toon informatie over MakeMe.md");
 
     wxMenuBar* menuBar = new wxMenuBar();
     menuBar->Append(menuFile, "&Bestand");
@@ -164,20 +164,26 @@ void MyFrame::OnExit(wxCommandEvent& event) {
 }
 
 void MyFrame::OnBold(wxCommandEvent& event) {
-    wxString selectedText = textCtrl->GetStringSelection();
-    if (!selectedText.IsEmpty()) {
+    long from, to;
+    textCtrl->GetSelection(&from, &to);
+    if (from != to) {
+        wxString selectedText = textCtrl->GetStringSelection();
+        selectedText.Replace("**", "");
         wxString newText = wxString::Format("**%s**", selectedText);
-        textCtrl->WriteText(newText);
+        textCtrl->Replace(from, to, newText);
     } else {
         textCtrl->WriteText("**Vette tekst**");
     }
 }
 
 void MyFrame::OnItalic(wxCommandEvent& event) {
-    wxString selectedText = textCtrl->GetStringSelection();
-    if (!selectedText.IsEmpty()) {
+    long from, to;
+    textCtrl->GetSelection(&from, &to);
+    if (from != to) {
+        wxString selectedText = textCtrl->GetStringSelection();
+        selectedText.Replace("*", "");
         wxString newText = wxString::Format("*%s*", selectedText);
-        textCtrl->WriteText(newText);
+        textCtrl->Replace(from, to, newText);
     } else {
         textCtrl->WriteText("*Italiaanse style tekst*");
     }
@@ -189,22 +195,31 @@ void MyFrame::OnChecklist(wxCommandEvent& event) {
 }
 
 void MyFrame::OnLink(wxCommandEvent& event) {
+    long from, to;
+    textCtrl->GetSelection(&from, &to);
     wxString selectedText = textCtrl->GetStringSelection();
     wxString url = wxGetTextFromUser("Voeg een URL toe:", "Geef een link op");
-    if (!selectedText.IsEmpty() && !url.IsEmpty()) {
-        wxString link = wxString::Format("[%s](%s)", selectedText, url);
-        textCtrl->WriteText(link);
+
+    if (url.IsEmpty()) {
+        wxMessageBox("Geen URL opgegeven", "Foutmelding", wxOK | wxICON_WARNING);
+        textCtrl->WriteText("[Linktekst](https://www.example.com)");
+    } else if (selectedText.IsEmpty()) {
+        wxString newText = wxString::Format("[%s](%s)", url, url);
+        textCtrl->WriteText(newText);
     } else {
-        wxString link = "[Link plaatshouder](http://example.com)";
-        textCtrl->WriteText(link);
+        wxString newText = wxString::Format("[%s](%s)", selectedText, url);
+        textCtrl->Replace(from, to, newText);
     }
 }
 
 void MyFrame::OnBlockquote(wxCommandEvent& event) {
-    wxString selectedText = textCtrl->GetStringSelection();
-    if (!selectedText.IsEmpty()) {
+    long from, to;
+    textCtrl->GetSelection(&from, &to);
+    if (from != to) {
+        wxString selectedText = textCtrl->GetStringSelection();
+        selectedText.Replace(">", "");
         wxString newText = wxString::Format("> %s", selectedText);
-        textCtrl->WriteText(newText);
+        textCtrl->Replace(from, to, newText);
     } else {
         textCtrl->WriteText("> Dit is een blockquote");
     }
@@ -216,10 +231,12 @@ void MyFrame::OnCodeBlock(wxCommandEvent& event) {
 }
 
 void MyFrame::OnHeader(wxCommandEvent& event) {
-    wxString selectedText = textCtrl->GetStringSelection();
-    if (!selectedText.IsEmpty()) {
+    long from, to;
+    textCtrl->GetSelection(&from, &to);
+    if (from != to) {
+        wxString selectedText = textCtrl->GetStringSelection();
         wxString newText = wxString::Format("# %s", selectedText);
-        textCtrl->WriteText(newText);
+        textCtrl->Replace(from, to, newText);
     } else {
         textCtrl->WriteText("# Titel");
     }
